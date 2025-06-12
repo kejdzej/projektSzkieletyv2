@@ -1,65 +1,101 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
-const reservationController = require('../controllers/reservationController');
-const auth = require('../middleware/auth');
-const admin = require('../middleware/admin');
+const router = express.Router();
 const Reservation = require('../models/Reservation');
 const Car = require('../models/Car');
+const authMiddleware = require('../middleware/auth');
 
-const router = express.Router();
-
-router.post(
-  '/',
-  [
-    auth,
-    check('carId', 'Car ID is required').isMongoId(),
-    check('startDate', 'Start date is required').isISO8601(),
-    check('endDate', 'End date is required').isISO8601(),
-  ],
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    console.log('Auth user:', req.user);
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ message: 'Authentication failed, userId missing' });
-    }
-    next();
-  },
-  reservationController.createReservation
-);
-
-router.get('/', auth, reservationController.getUserReservations);
-
-router.get('/all', [auth, admin], async (req, res) => {
+// Pobranie rezerwacji użytkownika
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const reservations = await Reservation.find().populate('carId', 'brand model');
-    console.log('All reservations for admin:', reservations);
+    const reservations = await Reservation.find({ userId: req.user.userId })
+      .populate('carId', 'brand model pricePerDay');
     res.json(reservations);
   } catch (err) {
-    console.error('Server error:', err.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
-router.delete('/reservations/:id', [auth, admin], async (req, res) => {
+// Pobranie wszystkich rezerwacji (admin)
+router.get('/all', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  try {
+    const reservations = await Reservation.find()
+      .populate('carId', 'brand model pricePerDay');
+    res.json(reservations);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Tworzenie nowej rezerwacji
+router.post('/', authMiddleware, async (req, res) => {
+  try {
+    const reservationData = req.body;
+
+    const car = await Car.findById(reservationData.carId);
+    if (!car) return res.status(404).json({ message: 'Car not found' });
+
+    const start = new Date(reservationData.startDate);
+    const end = new Date(reservationData.endDate);
+    const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+    const baseCost = days * car.pricePerDay;
+    const extraCosts = [
+      reservationData.insurance ? 50 : 0,
+      reservationData.trailer ? 100 : 0,
+      reservationData.offsiteDropoff ? 200 : 0,
+    ];
+    const totalCost = baseCost + extraCosts.reduce((a, b) => a + b, 0);
+
+    const reservation = await Reservation.create({
+      carId: reservationData.carId,
+      userId: req.user.userId,
+      startDate: start,
+      endDate: end,
+      insurance: reservationData.insurance === true,
+      trailer: reservationData.trailer === true,
+      offsiteDropoff: reservationData.offsiteDropoff === true,
+      totalCost: totalCost,
+    });
+
+    await Car.findByIdAndUpdate(reservationData.carId, { available: false });
+
+    res.status(201).json({ message: 'Reservation created', reservation });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
+    console.log('Reservation found:', reservation);
+
     if (!reservation) {
       return res.status(404).json({ message: 'Reservation not found' });
     }
-    const car = await Car.findById(reservation.carId);
-    if (car) {
-      car.available = true;
-      await car.save();
+
+    if (!reservation.userId || reservation.userId.toString() !== req.user.userId) {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized' });
+      }
     }
-    await Reservation.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Reservation canceled successfully' });
+
+    await reservation.deleteOne();
+
+    if (reservation.carId) {
+      await Car.findByIdAndUpdate(reservation.carId, { available: true });
+    }
+
+    res.json({ message: 'Reservation canceled' });
   } catch (err) {
-    console.error('Error canceling reservation:', err.message);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error in DELETE /reservations/:id:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
+
+
 
 module.exports = router;

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import LogoutButton from '../components/LogoutButton';
 import '../styles/ReservationForm.css';
 
 const ReservationForm = () => {
-  const { token } = useContext(AuthContext);
+  const { token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [startDate, setStartDate] = useState('');
@@ -23,27 +23,21 @@ const ReservationForm = () => {
     const id = searchParams.get('carId');
     if (id) setCarId(id);
     if (!token) navigate('/login');
-    else {
-      fetchCarData(id);
-    }
+    else if (id) fetchCarData(id);
   }, [token, navigate, location.search]);
 
   const fetchCarData = async (id) => {
-  try {
-    const res = await axios.get(`http://localhost:5001/api/cars/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setCarData(res.data);
-  } catch (err) {
-    if (err.response && err.response.status === 404) {
-      setError('Samochód nie znaleziony. Skontaktuj się z administratorem.');
-      setCarData({ brand: 'Nieznany', model: 'Model', pricePerDay: 0 });
-    } else {
-      console.error('Error fetching car data:', err);
+    try {
+      const res = await axios.get(`http://localhost:5001/api/cars/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCarData(res.data);
+    } catch (err) {
+      console.error('Fetch car data error:', err.response ? err.response.data : err.message);
       setError('Nie udało się pobrać danych samochodu.');
+      setCarData({ brand: 'Nieznany', model: 'Model', pricePerDay: 0 }); // Fallback
     }
-  }
-};
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +53,7 @@ const ReservationForm = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:5001/api/reservations', { carId, startDate, endDate }, {
+      await axios.post('http://localhost:5001/api/reservations', { carId, startDate, endDate, insurance, trailer, offsiteDropoff }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       navigate('/UserReservations');
@@ -72,12 +66,12 @@ const ReservationForm = () => {
     if (!carData || !startDate || !endDate) return 0;
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const diffTime = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    let baseCost = diffTime > 0 ? diffTime * carData.pricePerDay : 0;
+    const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+    const baseCost = days * carData.pricePerDay;
     const extraCosts = [
-      insurance ? 50 : 0, // Extra ubezpieczenie (50 PLN)
-      trailer ? 100 : 0,  // Extra przyczepka (100 PLN)
-      offsiteDropoff ? 200 : 0, // Odstawienie poza punkt (200 PLN)
+      insurance ? 50 : 0, // Dodatkowe ubezpieczenie
+      trailer ? 100 : 0,  // Przyczepka
+      offsiteDropoff ? 200 : 0, // Zostawienie w innym miejscu
     ];
     return baseCost + extraCosts.reduce((a, b) => a + b, 0);
   };
@@ -109,6 +103,33 @@ const ReservationForm = () => {
                 className="resform-input"
                 required
               />
+              <div>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={insurance}
+                    onChange={(e) => setInsurance(e.target.checked)}
+                  /> Dodatkowe ubezpieczenie (+50 zł)
+                </label>
+              </div>
+              <div>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={trailer}
+                    onChange={(e) => setTrailer(e.target.checked)}
+                  /> Przyczepka (+100 zł)
+                </label>
+              </div>
+              <div>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={offsiteDropoff}
+                    onChange={(e) => setOffsiteDropoff(e.target.checked)}
+                  /> Zostawienie w innym miejscu (+200 zł)
+                </label>
+              </div>
               <button type="submit" className="resform-button">
                 Zarezerwuj
               </button>
@@ -118,32 +139,9 @@ const ReservationForm = () => {
               {carData && (
                 <div>
                   <p>Model: {carData.brand} {carData.model}</p>
-                  <p>Cena bazowa/dzień: {carData.pricePerDay} PLN</p>
-                  <p>Liczba dni: {startDate && endDate ? Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) : 0}</p>
-                  <p>Całkowity koszt: {calculateTotalCost()} PLN</p>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={insurance}
-                      onChange={(e) => setInsurance(e.target.checked)}
-                    /> Extra ubezpieczenie (+50 PLN)
-                  </label>
-                  <br />
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={trailer}
-                      onChange={(e) => setTrailer(e.target.checked)}
-                    /> Extra przyczepka (+100 PLN)
-                  </label>
-                  <br />
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={offsiteDropoff}
-                      onChange={(e) => setOffsiteDropoff(e.target.checked)}
-                    /> Odstawienie poza punkt (+200 PLN)
-                  </label>
+                  <p>Cena bazowa/dzień: {carData.pricePerDay} zł</p>
+                  <p>Liczba dni: {startDate && endDate ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))) : 0}</p>
+                  <p>Całkowity koszt: <strong>{calculateTotalCost()} zł</strong></p>
                 </div>
               )}
             </div>

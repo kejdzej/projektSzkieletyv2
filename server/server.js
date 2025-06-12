@@ -9,7 +9,7 @@ const app = express();
 const port = 5001;
 
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000' })); // Zezwól na żądania z localhost:3000
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 mongoose.connect('mongodb://localhost:27017/car-rental', {
   useNewUrlParser: true,
@@ -25,53 +25,27 @@ const Reservation = require('./models/Reservation');
 // Middleware autoryzacji z debugowaniem
 const authMiddleware = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
-  console.log('Received token:', token); // Debug
+  console.log('Received token:', token);
   if (!token) return res.status(401).json({ message: 'No token provided' });
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      console.log('JWT Verification Error:', err.message); // Debug
+      console.log('JWT Verification Error:', err.message);
       return res.status(401).json({ message: 'Nieprawidłowy token' });
     }
     req.user = decoded;
-    console.log('User authenticated:', req.user); // Debug
+    console.log('User authenticated:', req.user);
     next();
   });
 };
 
-// Import routów
+// Import i rejestracja routów
 const carRoutes = require('./routes/cars');
+const reservationRoutes = require('./routes/reservations');
+
 app.use('/api/cars', carRoutes);
+app.use('/api/reservations', reservationRoutes);
 
-// Pozostałe endpointy
-app.get('/api/reservations', authMiddleware, async (req, res) => {
-  try {
-    const reservations = await Reservation.find({ userId: req.user.userId });
-    res.json(reservations);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-app.get('/api/reservations/all', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Admin access required' });
-  try {
-    const reservations = await Reservation.find();
-    res.json(reservations);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-app.delete('/api/reservations/:id', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Admin access required' });
-  try {
-    await Reservation.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Reservation deleted' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
+// Endpointy autoryzacji
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -98,17 +72,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/reservations', authMiddleware, async (req, res) => {
-  try {
-    const { carId, startDate, endDate } = req.body;
-    const reservation = new Reservation({ carId, userId: req.user.userId, startDate, endDate });
-    await reservation.save();
-    res.status(201).json({ message: 'Reservation created' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
+// Start serwera
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -27,18 +27,6 @@ const UserReservations = () => {
     if (token) fetchReservations();
   }, [token]);
 
-  const fetchCarDetails = async (carId) => {
-    try {
-      const res = await axios.get(`http://localhost:5001/api/cars/${carId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data;
-    } catch (err) {
-      console.error('Error fetching car details:', err);
-      return { brand: 'Nieznany', model: 'model' };
-    }
-  };
-
   if (loading) return <p style={{ textAlign: 'center', color: '#666' }}>Ładowanie...</p>;
   if (!token) return <p style={{ textAlign: 'center', color: '#666' }}>Zaloguj się, aby zobaczyć rezerwacje.</p>;
 
@@ -56,10 +44,14 @@ const UserReservations = () => {
             reservations.map((res) => (
               <div key={res._id} className="reservations-card">
                 <p>
-                  Model: {res.car ? `${res.car.brand} ${res.car.model}` : 'Nieznany model'}{' '}
+                  Model: {res.carId?.brand ? `${res.carId.brand} ${res.carId.model}` : 'Nieznany model'}{' '}
                   - {new Date(res.startDate).toLocaleDateString()} do{' '}
                   {new Date(res.endDate).toLocaleDateString()}
                 </p>
+                <p>Ubezpieczenie: {res.insurance ? 'Tak (+50 zł)' : 'Nie'}</p>
+                <p>Przyczepka: {res.trailer ? 'Tak (+100 zł)' : 'Nie'}</p>
+                <p>Zostawienie w innym miejscu: {res.offsiteDropoff ? 'Tak (+200 zł)' : 'Nie'}</p>
+                <p>Całkowity koszt: <strong>{res.totalCost} zł</strong></p>
               </div>
             ))
           )}
