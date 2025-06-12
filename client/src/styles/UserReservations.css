@@ -1,0 +1,51 @@
+.userres-container {
+  min-height: 100vh;
+  background-color: #f7fafc;
+  padding: 2rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.userres-box {
+  max-width: 800px;
+  width: 100%;
+}
+
+.userres-inner {
+  padding: 2rem;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.userres-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #2d3748;
+}
+
+.userres-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.userres-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.userres-item {
+  background-color: #edf2f7;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.userres-no-reservations {
+  text-align: center;
+  color: #a0aec0;
+}

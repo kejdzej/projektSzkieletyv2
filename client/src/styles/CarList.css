@@ -1,0 +1,143 @@
+.carlist-container {
+  min-height: 100vh;
+  background-color: #f7fafc;
+  padding: 2rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.carlist-box {
+  max-width: 800px;
+  width: 100%;
+}
+
+.carlist-inner {
+  padding: 2rem;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.carlist-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #2d3748;
+}
+
+.carlist-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.carlist-button {
+  padding: 0.5rem 1rem;
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.carlist-button:hover {
+  background-color: #8e44ad;
+}
+
+.carlist-login-buttons {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.carlist-login-button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.carlist-login-button:last-child {
+  margin-right: 0;
+  background-color: #27ae60;
+}
+
+.carlist-login-button:hover {
+  background-color: #2b6cb0;
+}
+
+.carlist-login-button:last-child:hover {
+  background-color: #219653;
+}
+
+.carlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.carlist-card {
+  background-color: #edf2f7;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.carlist-card img {
+  width: 100%;
+  height: 10rem;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.carlist-card h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.carlist-card p {
+  color: #4a5568;
+  margin-bottom: 0.25rem;
+}
+
+.carlist-card button {
+  background-color: #3498db;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.carlist-card button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.carlist-card button:hover:not(:disabled) {
+  background-color: #2b6cb0;
+}
+
+.carlist-no-cars {
+  text-align: center;
+  color: #a0aec0;
+}
+.carlist-button {
+  padding: 0.5rem 1rem;
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.carlist-button:hover {
+  background-color: #8e44ad;
+}
