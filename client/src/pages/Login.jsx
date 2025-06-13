@@ -1,7 +1,7 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';  // Hook do autoryzacji
+import { useAuth } from '../context/AuthContext'; // Hook do autoryzacji
 import '../styles/Login.css';
 
 const Login = () => {
@@ -44,6 +44,15 @@ const Login = () => {
       <div className="login-box">
         <div className="login-inner">
           <h1 className="login-title">Logowanie</h1>
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <button
+              onClick={() => navigate('/')}
+              className="login-button"
+              style={{ backgroundColor: '#2ecc71', marginBottom: '10px' }}
+            >
+              Strona główna
+            </button>
+          </div>
           {/* Wyświetlanie błędu jeśli istnieje */}
           {error && <p className="login-error">{error}</p>}
           <form onSubmit={handleSubmit} className="login-form">

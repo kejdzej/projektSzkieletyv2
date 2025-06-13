@@ -42,6 +42,22 @@ function Register() {
   return (
     <div className="register-container" style={{ maxWidth: 400, margin: '2rem auto', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px' }}>
       <h2 style={{ textAlign: 'center' }}>Rejestracja</h2>
+      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#2ecc71',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+        >
+          Strona główna
+        </button>
+      </div>
       {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '1rem' }}>

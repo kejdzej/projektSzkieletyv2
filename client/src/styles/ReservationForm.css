@@ -1,71 +1,66 @@
-.resform-container {
-  min-height: 100vh;
-  background-color: #f7fafc;
-  padding: 2rem 0;
-  display: flex;
-  justify-content: center;
-}
-
-.resform-box {
-  max-width: 1200px;
-  width: 100%;
-}
-
-.resform-inner {
-  padding: 2rem;
-  background-color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
-}
-
-.resform-title {
-  font-size: 2rem;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #2d3748;
-}
-
+/* Sekcja przycisków u góry */
 .resform-buttons {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1rem;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
 }
 
-.resform-content {
-  display: flex;
-  gap: 2rem;
+/* Ogólny styl przycisków */
+.resform-button,
+.admin-cancel {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-weight: 500;
 }
 
-.resform-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  flex: 1;
+/* Styl dla przycisku "Strona główna" */
+.resform-button {
+  background-color: #3182ce;
+  color: white;
 }
 
-.resform-summary {
-  flex: 1;
-  padding-left: 2rem;
-  border-left: 1px solid #e2e8f0;
+.resform-button:hover {
+  background-color: #2b6cb0;
 }
 
+/* Styl dla przycisku "Wyloguj" */
+.admin-cancel {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.admin-cancel:hover {
+  background-color: #c53030;
+}
+
+/* Usuwamy pozycjonowanie z home-button */
+.home-button {
+  position: static;
+  background-color: #2ecc71;
+}
+
+.home-button:hover {
+  background-color: #27ae60;
+}
+
+/* Pola input, w tym input[type="date"] */
 .resform-input {
   padding: 0.5rem 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 0.25rem;
   width: 100%;
+  background-color: white;
+  color: #2d3748;
+  font-size: 1rem;
 }
 
-.resform-button {
-  padding: 0.5rem 1rem;
-  background-color: #3182ce;
-  color: white;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-}
-
-.resform-button:hover {
-  background-color: #2b6cb0;
+/* Dodatkowo dla input[type=date] wymuszamy wygląd */
+.resform-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
 }

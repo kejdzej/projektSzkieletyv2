@@ -1,13 +1,12 @@
-// Usunięcie istniejących danych
 db.users.deleteMany({});
 db.cars.deleteMany({});
 db.reservations.deleteMany({});
 
-// Dodanie użytkownika admina
+// Dodanie użytkownika admina z zahashowanym hasłem
 db.users.insertOne({
   name: "Admin User",
   email: "admin@example.com",
-  password: "$2b$10$2RFhO3r3uFmwA8RbrBWX8estf6FNP8QyuqyxJp.QH1KJpx6U7wVMm",
+  password: "$2b$10$2RFhO3r3uFmwA8RbrBWX8estf6FNP8QyuqyxJp.QH1KJpx6U7wVMm", 
   role: "admin"
 });
 
@@ -28,5 +27,21 @@ db.cars.insertMany([
     pricePerDay: 120,
     available: true,
     imageUrl: "https://cdn.wheel-size.com/automobile/body/honda-civic-2019-2022-1684384835.4558437.jpg"
+  },
+  {
+    brand: "Ford",
+    model: "Focus",
+    year: 2021,
+    pricePerDay: 130,
+    available: true,
+    imageUrl: "https://www.ford.co.uk/content/dam/guxeu/rhd/central/cars/2021-focus/dse/column-cards/ford-focus-eu-Column_Card_Focus-ST-Line-X-3x2-1000x667-front-view.jpg"
+  },
+  {
+    brand: "BMW",
+    model: "3 Series",
+    year: 2022,
+    pricePerDay: 150,
+    available: true,
+    imageUrl: "https://images.hgmsites.net/lrg/2022-bmw-3-series-330e-xdrive-plug-in-hybrid-angular-front-exterior-view_100826982_l.jpg"
   }
 ]);

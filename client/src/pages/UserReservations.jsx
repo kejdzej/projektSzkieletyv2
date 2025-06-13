@@ -44,6 +44,13 @@ const UserReservations = () => {
         <div className="reservations-inner">
           <h1 className="reservations-title">Moje Rezerwacje</h1>
           <div className="reservations-buttons">
+            <button
+              onClick={() => navigate('/')}
+              className="reservations-button"
+              style={{ backgroundColor: '#2ecc71', marginRight: '10px' }}
+            >
+              Strona główna
+            </button>
             <LogoutButton />
           </div>
           {reservations.length === 0 ? (

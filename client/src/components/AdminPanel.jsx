@@ -62,7 +62,16 @@ const AdminPanel = () => {
           {/* Nagłówek panelu z tytułem i przyciskiem wylogowania */}
           <div className="admin-header">
             <h2 className="admin-title">Panel Admina</h2>
-            <LogoutButton />
+            <div style={{ textAlign: 'right' }}>
+              <button
+                onClick={() => navigate('/')}
+                className="admin-button"
+                style={{ backgroundColor: '#2ecc71', marginRight: '10px' }}
+              >
+                Strona główna
+              </button>
+              <LogoutButton />
+            </div>
           </div>
 
           <h3 className="admin-subtitle">Aktywne rezerwacje</h3>
