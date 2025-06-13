@@ -12,19 +12,27 @@ const UserReservations = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Jeśli brak tokena, można opcjonalnie przekierować do logowania lub zakończyć early
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     const fetchReservations = async () => {
       try {
         const res = await axios.get('http://localhost:5001/api/reservations', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setReservations(res.data);
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching reservations:', err);
+        // Opcjonalnie można ustawić komunikat błędu w stanie
+      } finally {
         setLoading(false);
       }
     };
-    if (token) fetchReservations();
+
+    fetchReservations();
   }, [token]);
 
   if (loading) return <p style={{ textAlign: 'center', color: '#666' }}>Ładowanie...</p>;
@@ -44,14 +52,15 @@ const UserReservations = () => {
             reservations.map((res) => (
               <div key={res._id} className="reservations-card">
                 <p>
-                  Model: {res.carId?.brand ? `${res.carId.brand} ${res.carId.model}` : 'Nieznany model'}{' '}
-                  - {new Date(res.startDate).toLocaleDateString()} do{' '}
-                  {new Date(res.endDate).toLocaleDateString()}
+                  Model: {res.carId?.brand && res.carId?.model ? `${res.carId.brand} ${res.carId.model}` : 'Nieznany model'}{' '}
+                  - {new Date(res.startDate).toLocaleDateString()} do {new Date(res.endDate).toLocaleDateString()}
                 </p>
                 <p>Ubezpieczenie: {res.insurance ? 'Tak (+50 zł)' : 'Nie'}</p>
                 <p>Przyczepka: {res.trailer ? 'Tak (+100 zł)' : 'Nie'}</p>
                 <p>Zostawienie w innym miejscu: {res.offsiteDropoff ? 'Tak (+200 zł)' : 'Nie'}</p>
-                <p>Całkowity koszt: <strong>{res.totalCost} zł</strong></p>
+                <p>
+                  Całkowity koszt: <strong>{res.totalCost} zł</strong>
+                </p>
               </div>
             ))
           )}

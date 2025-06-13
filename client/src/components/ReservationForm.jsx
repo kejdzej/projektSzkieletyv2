@@ -3,12 +3,14 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LogoutButton from '../components/LogoutButton';
-import '../styles/ReservationForm.css';
+import '../styles/ReservationForm.css'; 
 
 const ReservationForm = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Stany dla formularza i danych samochodu
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [carId, setCarId] = useState('');
@@ -18,6 +20,7 @@ const ReservationForm = () => {
   const [trailer, setTrailer] = useState(false);
   const [offsiteDropoff, setOffsiteDropoff] = useState(false);
 
+  // Przy załadowaniu komponentu pobierz parametry i dane samochodu
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get('carId');
@@ -26,6 +29,7 @@ const ReservationForm = () => {
     else if (id) fetchCarData(id);
   }, [token, navigate, location.search]);
 
+  // Pobiera dane samochodu po ID z backendu
   const fetchCarData = async (id) => {
     try {
       const res = await axios.get(`http://localhost:5001/api/cars/${id}`, {
@@ -35,10 +39,11 @@ const ReservationForm = () => {
     } catch (err) {
       console.error('Fetch car data error:', err.response ? err.response.data : err.message);
       setError('Nie udało się pobrać danych samochodu.');
-      setCarData({ brand: 'Nieznany', model: 'Model', pricePerDay: 0 }); // Fallback
+      setCarData({ brand: 'Nieznany', model: 'Model', pricePerDay: 0 });
     }
   };
 
+  // Obsługuje wysłanie formularza - tworzy rezerwację
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!startDate || !endDate) {
@@ -53,15 +58,18 @@ const ReservationForm = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:5001/api/reservations', { carId, startDate, endDate, insurance, trailer, offsiteDropoff }, {
+      await axios.post('http://localhost:5001/api/reservations', { 
+        carId, startDate, endDate, insurance, trailer, offsiteDropoff 
+      }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       navigate('/UserReservations');
     } catch (err) {
-      setError('Błąd rezerwacji: ' + err.response?.data?.message || err.message);
+      setError('Błąd rezerwacji: ' + (err.response?.data?.message || err.message));
     }
   };
 
+  // Oblicza całkowity koszt rezerwacji
   const calculateTotalCost = () => {
     if (!carData || !startDate || !endDate) return 0;
     const start = new Date(startDate);
@@ -69,14 +77,14 @@ const ReservationForm = () => {
     const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
     const baseCost = days * carData.pricePerDay;
     const extraCosts = [
-      insurance ? 50 : 0, // Dodatkowe ubezpieczenie
-      trailer ? 100 : 0,  // Przyczepka
-      offsiteDropoff ? 200 : 0, // Zostawienie w innym miejscu
+      insurance ? 50 : 0,        // koszt ubezpieczenia
+      trailer ? 100 : 0,         // koszt przyczepki
+      offsiteDropoff ? 200 : 0,  // koszt zostawienia w innym miejscu
     ];
     return baseCost + extraCosts.reduce((a, b) => a + b, 0);
   };
 
-  if (!token) return null;
+  if (!token) return null; // jeśli brak tokena, nic nie renderuj
 
   return (
     <div className="resform-container">

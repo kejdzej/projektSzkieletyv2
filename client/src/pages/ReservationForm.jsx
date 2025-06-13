@@ -9,23 +9,31 @@ const ReservationForm = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Stany formularza i danych samochodu
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [carId, setCarId] = useState('');
   const [error, setError] = useState('');
   const [carData, setCarData] = useState(null);
+
+  // Opcjonalne dodatki do rezerwacji
   const [insurance, setInsurance] = useState(false);
   const [trailer, setTrailer] = useState(false);
   const [offsiteDropoff, setOffsiteDropoff] = useState(false);
 
+  // Efekt uruchamiany przy załadowaniu komponentu - pobranie ID auta z query params i danych auta
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get('carId');
     if (id) setCarId(id);
+
+    // Jeśli brak tokena - przekierowanie do logowania
     if (!token) navigate('/login');
     else if (id) fetchCarData(id);
   }, [token, navigate, location.search]);
 
+  // Pobranie danych auta z backendu
   const fetchCarData = async (id) => {
     try {
       const res = await axios.get(`http://localhost:5001/api/cars/${id}`, {
@@ -35,12 +43,16 @@ const ReservationForm = () => {
     } catch (err) {
       console.error('Fetch car data error:', err.response ? err.response.data : err.message);
       setError('Nie udało się pobrać danych samochodu.');
-      setCarData({ brand: 'Nieznany', model: 'Model', pricePerDay: 0 }); // Fallback
+      // Fallback, żeby formularz się nie załamał
+      setCarData({ brand: 'Nieznany', model: 'Model', pricePerDay: 0 });
     }
   };
 
+  // Obsługa wysłania formularza rezerwacji
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Walidacja dat
     if (!startDate || !endDate) {
       setError('Wybierz daty startu i końca.');
       return;
@@ -52,31 +64,41 @@ const ReservationForm = () => {
       setError('Data końca musi być po dacie startu.');
       return;
     }
+
     try {
-      console.log('Sending reservation data:', { carId, startDate, endDate, insurance, trailer, offsiteDropoff }); // Debug
-      await axios.post('http://localhost:5001/api/reservations', { carId, startDate, endDate, insurance, trailer, offsiteDropoff }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log('Sending reservation data:', { carId, startDate, endDate, insurance, trailer, offsiteDropoff });
+      await axios.post(
+        'http://localhost:5001/api/reservations',
+        { carId, startDate, endDate, insurance, trailer, offsiteDropoff },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       navigate('/UserReservations');
     } catch (err) {
-      setError('Błąd rezerwacji: ' + err.response?.data?.message || err.message);
+      setError('Błąd rezerwacji: ' + (err.response?.data?.message || err.message));
     }
   };
 
+  // Funkcja licząca całkowity koszt rezerwacji
   const calculateTotalCost = () => {
     if (!carData || !startDate || !endDate) return 0;
+
     const start = new Date(startDate);
     const end = new Date(endDate);
     const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+
     const baseCost = days * carData.pricePerDay;
+
+    // Dodatkowe opłaty
     const extraCosts = [
-      insurance ? 50 : 0, // Dodatkowe ubezpieczenie
-      trailer ? 100 : 0,  // Przyczepka
-      offsiteDropoff ? 200 : 0, // Zostawienie w innym miejscu
+      insurance ? 50 : 0,
+      trailer ? 100 : 0,
+      offsiteDropoff ? 200 : 0,
     ];
+
     return baseCost + extraCosts.reduce((a, b) => a + b, 0);
   };
 
+  // Jeśli brak tokena - nic nie renderuj
   if (!token) return null;
 
   return (
@@ -87,7 +109,9 @@ const ReservationForm = () => {
           <div className="resform-buttons">
             <LogoutButton />
           </div>
+
           {error && <p style={{ color: '#e53e3e', textAlign: 'center' }}>{error}</p>}
+
           <div className="resform-content">
             <form onSubmit={handleSubmit} className="resform-form">
               <input
@@ -104,13 +128,15 @@ const ReservationForm = () => {
                 className="resform-input"
                 required
               />
+
               <div>
                 <label>
                   <input
                     type="checkbox"
                     checked={insurance}
                     onChange={(e) => setInsurance(e.target.checked)}
-                  /> Dodatkowe ubezpieczenie (+50 zł)
+                  />{' '}
+                  Dodatkowe ubezpieczenie (+50 zł)
                 </label>
               </div>
               <div>
@@ -119,7 +145,8 @@ const ReservationForm = () => {
                     type="checkbox"
                     checked={trailer}
                     onChange={(e) => setTrailer(e.target.checked)}
-                  /> Przyczepka (+100 zł)
+                  />{' '}
+                  Przyczepka (+100 zł)
                 </label>
               </div>
               <div>
@@ -128,21 +155,33 @@ const ReservationForm = () => {
                     type="checkbox"
                     checked={offsiteDropoff}
                     onChange={(e) => setOffsiteDropoff(e.target.checked)}
-                  /> Zostawienie w innym miejscu (+200 zł)
+                  />{' '}
+                  Zostawienie w innym miejscu (+200 zł)
                 </label>
               </div>
+
               <button type="submit" className="resform-button">
                 Zarezerwuj
               </button>
             </form>
+
             <div className="resform-summary">
               <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Podsumowanie</h3>
               {carData && (
                 <div>
-                  <p>Model: {carData.brand} {carData.model}</p>
+                  <p>
+                    Model: {carData.brand} {carData.model}
+                  </p>
                   <p>Cena bazowa/dzień: {carData.pricePerDay} zł</p>
-                  <p>Liczba dni: {startDate && endDate ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))) : 0}</p>
-                  <p>Całkowity koszt: <strong>{calculateTotalCost()} zł</strong></p>
+                  <p>
+                    Liczba dni:{' '}
+                    {startDate && endDate
+                      ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)))
+                      : 0}
+                  </p>
+                  <p>
+                    Całkowity koszt: <strong>{calculateTotalCost()} zł</strong>
+                  </p>
                 </div>
               )}
             </div>

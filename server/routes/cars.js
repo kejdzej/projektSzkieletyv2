@@ -1,9 +1,10 @@
 const express = require('express');
 const { check } = require('express-validator');
-const carController = require('../controllers/carController'); // Upewnij się, że istnieje
+const carController = require('../controllers/carController');
 const auth = require('../middleware/auth');
-const Car = require('../models/Car'); // Upewnij się, że ścieżka jest poprawna
+const Car = require('../models/Car'); 
 const admin = require('../middleware/admin');
+const Reservation = require('../models/Reservation');
 const mongoose = require('mongoose'); // Dodano dla ObjectId.isValid
 
 const router = express.Router();

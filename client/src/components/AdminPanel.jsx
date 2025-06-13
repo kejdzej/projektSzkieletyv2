@@ -5,19 +5,24 @@ import { useNavigate } from 'react-router-dom';
 import LogoutButton from './LogoutButton';
 
 const AdminPanel = () => {
+  // Pobieranie tokena i roli użytkownika z kontekstu autoryzacji
   const { token, role } = useAuth();
   const navigate = useNavigate();
+
+  // Stan przechowujący listę rezerwacji oraz stan ładowania
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Efekt uruchamiający się po załadowaniu komponentu, sprawdza uprawnienia i pobiera rezerwacje
   useEffect(() => {
     if (!token || role !== 'admin') {
-      navigate('/');
+      navigate('/'); // Przekierowanie jeśli brak tokena lub brak roli admina
       return;
     }
     fetchReservations();
   }, [token, role, navigate]);
 
+  // Funkcja pobierająca wszystkie rezerwacje (dostępna tylko dla admina)
   const fetchReservations = async () => {
     try {
       const res = await axios.get('http://localhost:5001/api/reservations/all', {
@@ -31,41 +36,53 @@ const AdminPanel = () => {
     }
   };
 
+  // Funkcja anulująca rezerwację o podanym ID
   const cancelReservation = async (reservationId) => {
     try {
       await axios.delete(`http://localhost:5001/api/reservations/${reservationId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchReservations();
+      fetchReservations(); // Odświeżenie listy po anulowaniu
     } catch (err) {
       console.error('Error canceling reservation:', err);
     }
   };
 
-  if (loading) return <p className="text-center text-gray-600">Ładowanie...</p>;
+  // Wyświetlenie komunikatu podczas ładowania danych
+  if (loading) return <p className="admin-no-reservations">Ładowanie...</p>;
+
+  // Ukrycie panelu jeśli brak tokena lub brak uprawnień admina
   if (!token || role !== 'admin') return null;
 
+  // Render panelu admina z listą rezerwacji i możliwością anulowania
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-          <div className="flex justify-between mb-4">
-            <h2 className="text-3xl font-bold text-gray-900">Panel Admina</h2>
+    <div className="admin-container">
+      <div className="admin-box">
+        <div className="admin-inner">
+          {/* Nagłówek panelu z tytułem i przyciskiem wylogowania */}
+          <div className="admin-header">
+            <h2 className="admin-title">Panel Admina</h2>
             <LogoutButton />
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Aktywne rezerwacje</h3>
+
+          <h3 className="admin-subtitle">Aktywne rezerwacje</h3>
+
+          {/* Jeśli brak rezerwacji, wyświetl komunikat */}
           {reservations.length === 0 ? (
-            <p className="text-center text-gray-500">Brak aktywnych rezerwacji.</p>
+            <p className="admin-no-reservations">Brak aktywnych rezerwacji.</p>
           ) : (
-            <ul className="space-y-4">
+            // Lista rezerwacji
+            <ul className="admin-list">
               {reservations.map((res) => (
-                <li key={res._id} className="bg-gray-50 p-4 rounded-lg shadow">
-                  {res.carId?.brand ? `${res.carId.brand} ${res.carId.model}` : 'Nieznany model'} - 
-                  {new Date(res.startDate).toLocaleDateString()} do {new Date(res.endDate).toLocaleDateString()}
+                <li key={res._id} className="admin-item">
+                  <span>
+                    {res.carId?.brand ? `${res.carId.brand} ${res.carId.model}` : 'Nieznany model'} -{' '}
+                    {new Date(res.startDate).toLocaleDateString()} do {new Date(res.endDate).toLocaleDateString()}
+                  </span>
+                  {/* Przycisk anulowania rezerwacji */}
                   <button
                     onClick={() => cancelReservation(res._id)}
-                    className="ml-4 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                    className="admin-cancel"
                   >
                     Anuluj
                   </button>

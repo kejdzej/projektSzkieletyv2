@@ -1,16 +1,15 @@
-// routes/auth.js
-
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'tajny_klucz_123';
 
 // Rejestracja
 router.post('/register', async (req, res) => {
   try {
+    console.log('Received register request body:', req.body); // Debug
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -28,8 +27,8 @@ router.post('/register', async (req, res) => {
     await user.save();
     res.status(201).json({ message: 'User registered successfully', userId: user._id });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Registration error:', err.message);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
@@ -52,14 +51,12 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generowanie tokenu JWT
     const payload = {
       userId: user._id,
       role: user.role || 'user',
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
 
-    // Zwracamy token, userId i role
     res.status(200).json({
       message: 'Login successful',
       token,

@@ -7,6 +7,8 @@ import Register from './pages/Register';
 import ReservationForm from './pages/ReservationForm';
 import UserReservations from './pages/UserReservations';
 import AdminPanel from './components/AdminPanel';
+import Home from './pages/Home';
+
 import PrivateRoute from './components/PrivateRoute';
 
 class ErrorBoundary extends Component {
@@ -30,7 +32,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<CarList />} />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/ReservationForm" element={<ReservationForm />} />

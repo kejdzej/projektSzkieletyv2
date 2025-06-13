@@ -6,11 +6,11 @@ import LogoutButton from '../components/LogoutButton';
 import '../styles/CarList.css';
 
 const CarList = () => {
-  const { token, role } = useAuth(); // Poprawiona destrukturyzacja
+  const { token, role } = useAuth(); //destrukturyzacja
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     console.log('Token in CarList useEffect:', token); // Debug token
     const fetchCars = async () => {

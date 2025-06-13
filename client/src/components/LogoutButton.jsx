@@ -1,11 +1,13 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LogoutButton = () => {
+  // Pobranie funkcji logout z kontekstu autoryzacji
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  // Funkcja wylogowania i przekierowania na stronę logowania
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -14,7 +16,7 @@ const LogoutButton = () => {
   return (
     <button
       onClick={handleLogout}
-      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+      className="admin-cancel" // Użycie Twojej klasy CSS zamiast Tailwind
     >
       Wyloguj
     </button>
